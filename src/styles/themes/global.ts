@@ -9,6 +9,5 @@ export const GlobalStyle = createGlobalStyle`
 
   body{
     color: #333;
-    color: white;
   }
 `
