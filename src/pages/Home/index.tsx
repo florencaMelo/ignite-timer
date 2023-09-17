@@ -1,5 +1,5 @@
 import { Play } from "phosphor-react";
-import { CountdownContainer, FormContainer, HomeContainer, Separator, CountDownButton, TaskInput, MinutesAmoundInput } from "./styles";
+import { CountdownContainer, FormContainer, HomeContainer, Separator, CountDownButton, TaskInput, MinutesAmountInput } from "./styles";
 import { useForm } from 'react-hook-form'
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as zod from 'zod' 
@@ -13,7 +13,7 @@ import { useState } from 'react'
 
 const newCicleFormValidationSchema = zod.object({
   task: zod.string().min(1,'Informe a tarefa'),
-  minutesAmound: zod.number().min(5).max(60),
+  minutesAmount: zod.number().min(5).max(60),
 })
 
 type NewCicleFormData = zod.infer<typeof newCicleFormValidationSchema>
@@ -21,13 +21,13 @@ type NewCicleFormData = zod.infer<typeof newCicleFormValidationSchema>
 interface Cycle {
   id: string
   task: string
-  minutesamound: number
+  minutesamount: number
 }
 
 export function Home() {
-
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  const [amountSecondPassed, setAmountSecondPassed] = useState(0)
 
   const { handleSubmit, register, watch, reset } = useForm<NewCicleFormData>({
     resolver: zodResolver(newCicleFormValidationSchema),
@@ -39,7 +39,7 @@ export function Home() {
     const newCycle: Cycle = {
       id,
       task: data.task,
-      minutesamound: data.minutesAmound,
+      minutesamount: data.minutesAmount,
     }
 
     setCycles((state) => [...state, newCycle]),
@@ -48,10 +48,20 @@ export function Home() {
     reset()
   } 
 
-  const activeCycle = cycles.find((cycle) => cycle.id = activeCycleId) 
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+  const totalSeconds = activeCycle ? activeCycle.minutesamount * 60 : 0
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondPassed : 0
 
-  console.log(activeCycle)
+  const minutesAmount = Math.floor(currentSeconds / 60) /* Transforma em minutos arredondados */
+  const secondsAmount = currentSeconds % 60
 
+  const minutes = String(minutesAmount).padStart(2, '0')
+  const seconds = String(secondsAmount).padStart(2, '0')
+
+  console.log(minutes)
+  console.log(seconds)
+
+  
   const task = watch('task')
   const isSubmitDisabled = !task;
 
@@ -72,25 +82,25 @@ export function Home() {
           </datalist>
 
           <label>Durante</label>
-          <MinutesAmoundInput 
+          <MinutesAmountInput 
            type="number"
-           id="minutesAmound" 
+           id="minutesAmount" 
            placeholder="00"
            step={5}
            min={5}
            max={60}
-           {...register('minutesAmound', { valueAsNumber: true })}
+           {...register('minutesAmount', { valueAsNumber: true })}
            />
 
           <span>minutos.</span>
         </FormContainer>
 
         <CountdownContainer>
-          <span>0</span>
-          <span>0</span>
+          <span>{minutes[0]}</span>
+          <span>{minutes[1]}</span>
           <Separator>:</Separator>
-          <span>0</span>
-          <span>0</span>
+          <span>{seconds[0]}</span>
+          <span>{seconds[1]}</span>
         </CountdownContainer>
 
         <CountDownButton disabled={isSubmitDisabled} type="submit">
